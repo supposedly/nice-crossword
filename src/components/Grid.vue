@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getCurrentInstance, reactive, watchEffect } from 'vue';
+import { getCurrentInstance, reactive } from 'vue';
 import Cell from './Cell.vue'
 import { PairSet } from '../utils';
 
