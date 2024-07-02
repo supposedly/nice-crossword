@@ -1,14 +1,66 @@
 <script setup lang="ts">
+import { watchEffect } from 'vue';
 
-withDefaults(defineProps<{name: string}>(), {name: 'grid'});
+const props = withDefaults(defineProps<{name: string, row: number, col: number}>(), {name: 'grid'});
+const model = defineModel<string>();
+const emit = defineEmits(['update', 'jump']);
+
+function jump(e: KeyboardEvent) {
+    switch (e.key.replace(/^Arrow/, '')) {
+        case 'Tab':
+            emit('jump', props.row, props.col, {relative: true, direction: !e.shiftKey});
+            break;
+        case 'Up':
+        case 'Down':
+        case 'Left':
+        case 'Right':
+            emit('jump', props.row, props.col, {relative: false, direction: e.key.replace(/^Arrow/, '')});
+            break;
+        default:
+            (e.target as HTMLInputElement).value = '';
+            emit('jump', props.row, props.col, {relative: true, direction: true});
+            break;
+    }
+}
+
+watchEffect(
+  () => emit('update', props.row, props.col, model.value)
+)
 </script>
 
 <template>
-    <input type="radio" :name="name"></input>
+    <input
+        v-model="model"
+        :name="name"
+        maxlength="1"
+        size="1"
+        :data-row="row"
+        :data-col="col"
+        @keypress="jump"
+        @keydown.tab.prevent="jump"
+        @keydown.up.prevent="jump"
+        @keydown.down.prevent="jump"
+        @keydown.left.prevent="jump"
+        @keydown.right.prevent="jump"
+    ></input>
 </template>
 
 <style scoped>
     input {
         display: block;
+        width: 100%;
+        height: 0;
+        padding: none;
+        padding-bottom: 50%;
+        padding-top: 50%;
+
+        text-align: center;
+        text-transform: uppercase;
+
+        &:focus{
+            outline: none;
+            background-color: #eee;
+            caret-color: transparent;
+        }
     }
 </style>
