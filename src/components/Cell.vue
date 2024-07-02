@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { watch, watchEffect } from 'vue';
 
-const props = withDefaults(defineProps<{name: string, row: number, col: number}>(), {name: 'grid'});
+const props = withDefaults(defineProps<{name: string, row: number, col: number, number: number | null}>(), {name: 'grid'});
 const model = defineModel<string>();
 const emit = defineEmits(['update', 'jump']);
 
@@ -29,24 +28,37 @@ function update() {
 </script>
 
 <template>
-    <input
-        v-model="model"
-        :name="name"
-        maxlength="1"
-        size="1"
-        :data-row="row"
-        :data-col="col"
-        @input="update"
-        @keypress="jump"
-        @keydown.tab.prevent="jump"
-        @keydown.up.prevent="jump"
-        @keydown.down.prevent="jump"
-        @keydown.left.prevent="jump"
-        @keydown.right.prevent="jump"
-    ></input>
+    <p>
+        <span>{{ number }}</span>
+        <input
+            v-model="model"
+            :name="name"
+            maxlength="1"
+            size="1"
+            :data-row="row"
+            :data-col="col"
+            @input="update"
+            @keypress="jump"
+            @keydown.tab.prevent="jump"
+            @keydown.up.prevent="jump"
+            @keydown.down.prevent="jump"
+            @keydown.left.prevent="jump"
+            @keydown.right.prevent="jump"
+        ></input>
+    </p>
 </template>
 
 <style scoped>
+    p {
+        position: relative;
+    }
+
+    span {
+        position: absolute;
+        left: 5px;
+        top: -5px;
+    }
+
     input {
         display: block;
         width: 100%;

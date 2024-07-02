@@ -1,17 +1,27 @@
 <script setup lang="ts">
-import { getCurrentInstance } from 'vue';
+import { getCurrentInstance, reactive, watchEffect } from 'vue';
 import Cell from './Cell.vue'
 import { PairSet } from '../utils';
 
 const props = defineProps<{width: number, height: number}>();
 
-let grid: Array<Array<string>> = Array.from(
+let grid: Array<Array<string>> = reactive(Array.from(
     {length: props.height},
     () => Array.from({length: props.width}, () => '')
-);
+));
+
+let numberGrid: Array<Array<number | null>> = reactive(Array.from({length: props.height}, () => Array.from({length: props.width}, () => null)));
 
 let across = new PairSet<number>();
 let down = new PairSet<number>();
+
+function showNumber(number: number, row: number, col: number) {
+    numberGrid[row][col] = number;
+}
+
+function removeNumber(row: number, col: number) {
+    numberGrid[row][col] = null;
+}
 
 function update(row: number, col: number) {
     const value = grid[row]?.[col].trim();
@@ -32,6 +42,17 @@ function update(row: number, col: number) {
         }
         if (grid[row + 1]?.[col]) {
             down.add(row + 1, col);
+        }
+    }
+
+    let number = 0;
+    for (let row = 0; row < props.height; row++) {
+        for (let col = 0; col < props.width; col++) {
+            if (across.has(row, col) || down.has(row, col)) {
+                showNumber(number++, row, col);
+            } else {
+                removeNumber(row, col);
+            }
         }
     }
 }
@@ -69,11 +90,12 @@ const name = getCurrentInstance()?.uid.toString();
 <template>
     <div>
         <template v-for="row in height" v-if="grid">
-            <Cell v-for="col in width" v-if="grid[row]"
+            <Cell v-for="col in width" v-if="grid[row]" 
                 :name
-                :row
-                :col
-                v-model="grid[row][col]"
+                :row="row - 1"
+                :col="col - 1"
+                :number="numberGrid[row - 1][col - 1]"
+                v-model="grid[row - 1][col - 1]"
                 @update="update"
                 @jump="jump"
             />
