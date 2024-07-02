@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue';
+import { watch, watchEffect } from 'vue';
 
 const props = withDefaults(defineProps<{name: string, row: number, col: number}>(), {name: 'grid'});
 const model = defineModel<string>();
@@ -23,9 +23,9 @@ function jump(e: KeyboardEvent) {
     }
 }
 
-watchEffect(
-  () => emit('update', props.row, props.col, model.value)
-)
+function update() {
+    emit('update', props.row, props.col)
+}
 </script>
 
 <template>
@@ -36,6 +36,7 @@ watchEffect(
         size="1"
         :data-row="row"
         :data-col="col"
+        @input="update"
         @keypress="jump"
         @keydown.tab.prevent="jump"
         @keydown.up.prevent="jump"
