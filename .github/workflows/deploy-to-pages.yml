@@ -26,14 +26,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out
         uses: actions/checkout@v4
-      - name: Setup Pages
+      - name: Set up Pages
         uses: actions/configure-pages@v5
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Vite
+        run: npm install vite
       - name: Build with Vite
-        run: vite build --outDir _site
+        run: npx vite build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
 
   # Deployment job
   deploy:
