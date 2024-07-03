@@ -1,51 +1,74 @@
 <script setup lang="ts">
-import { getCurrentInstance, reactive } from 'vue';
+import { getCurrentInstance, reactive, computed , watchEffect} from 'vue';
 import Cell from './Cell.vue'
-import { PairSet } from '../utils';
+import { PairMap, PairSet } from '../utils';
 
 const props = defineProps<{width: number, height: number}>();
 
-let grid: Array<Array<string>> = reactive(Array.from(
-    {length: props.height},
-    () => Array.from({length: props.width}, () => '')
-));
-
-let numberGrid: Array<Array<number | null>> = reactive(Array.from({length: props.height}, () => Array.from({length: props.width}, () => null)));
+let grid: PairMap<{value: string, number: number | null}, number> = reactive(new PairMap());
 
 let across = new PairSet<number>();
 let down = new PairSet<number>();
 
 function showNumber(number: number, row: number, col: number) {
-    numberGrid[row][col] = number;
+    grid.get(row, col).number = number;
 }
 
 function removeNumber(row: number, col: number) {
-    numberGrid[row][col] = null;
+    grid.get(row, col).number = null;
+}
+
+function addAcross(row: number, col: number) {
+    if (!grid.get(row, col)?.value.trim()) {
+        across.delete(row, col);
+        return;
+    }
+    if (grid.get(row, col - 1)?.value.trim()) {
+        across.delete(row, col);
+        return;
+    }
+    if (grid.get(row, col + 1)?.value.trim()) {
+        across.add(row, col);
+        return;
+    }
+    across.delete(row, col);
+}
+
+function addDown(row: number, col: number) {
+    if (!grid.get(row, col)?.value.trim()) {
+        across.delete(row, col);
+        return;
+    }
+    if (grid.get(row - 1, col)?.value.trim()) {
+        down.delete(row, col);
+        return;
+    }
+    if (grid.get(row + 1, col)?.value.trim()) {
+        down.add(row, col);
+        return;
+    }
+    down.delete(row, col);
 }
 
 function update(row: number, col: number) {
-    const value = grid[row]?.[col].trim();
+    const value = grid.get(row, col)?.value.trim();
     if (value) {
         across.delete(row, col + 1);
         down.delete(row + 1, col);
-        if (!grid[row][col - 1]) {
-            across.add(row, col);
-        }
-        if (!grid[row - 1]?.[col]) {
-            down.add(row, col);
-        }
+        addAcross(row, col);
+        addDown(row, col);
+        addAcross(row, col - 1);
+        addDown(row - 1, col);
     } else {
         across.delete(row, col);
         down.delete(row, col);
-        if (grid[row][col + 1]) {
-            across.add(row, col + 1);
-        }
-        if (grid[row + 1]?.[col]) {
-            down.add(row + 1, col);
-        }
+        addAcross(row, col + 1);
+        addDown(row + 1, col);
+        addAcross(row, col - 1);
+        addDown(row - 1, col);
     }
 
-    let number = 0;
+    let number = 1;
     for (let row = 0; row < props.height; row++) {
         for (let col = 0; col < props.width; col++) {
             if (across.has(row, col) || down.has(row, col)) {
@@ -89,13 +112,13 @@ const name = getCurrentInstance()?.uid.toString();
 
 <template>
     <div>
-        <template v-for="row in height" v-if="grid">
-            <Cell v-for="col in width" v-if="grid[row]" 
+        <template v-for="row in height">
+            <Cell v-for="col in width"
                 :name
                 :row="row - 1"
                 :col="col - 1"
-                :number="numberGrid[row - 1][col - 1]"
-                v-model="grid[row - 1][col - 1]"
+                :number="grid.setDefault(row - 1, col - 1, {value: '', number: null}).number"
+                v-model="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
                 @update="update"
                 @jump="jump"
             />

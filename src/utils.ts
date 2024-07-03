@@ -1,16 +1,16 @@
 // thank you mine-tac-toe
 // https://github.com/supposedly/mine-tac-toe/blob/620594a1514c65d1c6c9fcaecdc2a933e05e87cb/main.js#L62
 
-export class PairSet<A, B = A> {
+export class PairMap<V, A, B = A> {
   size: number;
-  private map: Map<A, Set<B>>;
+  private map: Map<A, Map<B, V>>;
 
 
-  constructor(values?: [A, B][]) {
+  constructor(values?: [A, B, V][]) {
     this.size = 0;
     this.map = new Map();
     if (values !== undefined) {
-      values.forEach(([a, b]) => this.add(a, b));
+      values.forEach(([a, b, v]) => this.set(a, b, v));
     }
   }
 
@@ -18,23 +18,112 @@ export class PairSet<A, B = A> {
     return this.map.has(a);
   }
 
-  private getPrimary(a: A): Set<B> | undefined {
+  private getPrimary(a: A): Map<B, V> | undefined {
     return this.map.get(a);
   }
 
   private setPrimary(a: A) {
-    return this.map.set(a, new Set());
+    return this.map.set(a, new Map());
   }
 
   private delPrimary(a: A) {
     return this.map.delete(a);
   }
 
+  setDefault(a: A, b: B, fallback: V) {
+    if (!this.has(a, b)) {
+      this.set(a, b, fallback);
+    }
+    return this.get(a, b);
+  }
+
+  forEach(callback: (a: A, b: B, v?: V, pairMap?: PairMap<V, A, B>) => unknown) {
+    this.map.forEach(
+      (map, a) => map.forEach(
+        (v, b) => callback(a, b, v, this)
+      )
+    );
+  }
+
+  reduce<T>(callback: (acc: T, a: A, b: B, v?: V, pairMap?: PairMap<V, A, B>) => T, defaultVal: T) {
+    let acc = defaultVal;
+    this.forEach(
+      (a, b, v) => { acc = callback(acc, a, b, v, this); }
+    );
+    return acc;
+  }
+
+  some(callback: (a: A, b: B, v?: V, pairMap?: PairMap<V, A, B>) => boolean) {
+    // doesn't stop on first true... at least short-circuits, though
+    return this.reduce(
+      (acc, a, b, v) => acc || callback(a, b, v, this),
+      false
+    );
+  }
+
+  every(callback: (a: A, b: B, v?: V, pairMap?: PairMap<V, A, B>) => boolean) {
+    // doesn't stop on first false... at least short-circuits, though
+    return this.reduce(
+      (acc, a, b, v) => acc && callback(a, b, v, this),
+      true
+    );
+  }
+
+  clear() {
+    this.map.clear();
+    this.size = 0;
+  }
+
+  set(a: A, b: B, v: V) {
+    if (!this.hasPrimary(a)) {
+      this.setPrimary(a);
+    }
+    this.getPrimary(a)!.set(b, v);
+    this.size += 1;
+    return this;
+  }
+
+  delete(a: A, b: B) {
+    if (!this.hasPrimary(a)) {
+      return false;
+    }
+    const ret = this.getPrimary(a)!.delete(b);
+    if (this.getPrimary(a)!.size === 0) {
+      this.delPrimary(a);
+    }
+    this.size -= 1;
+    return ret;
+  }
+
+  has(a: A, b: B) {
+    if (!this.hasPrimary(a)) {
+      return false;
+    }
+    return this.getPrimary(a)!.has(b);
+  }
+
+  get(a: A, b: B): V | undefined {
+    return this.getPrimary(a)?.get(b);
+  }
+}
+
+export class PairSet<A, B = A> {
+  private map: PairMap<undefined, A, B>;
+
+  constructor(values?: [A, B][]) {
+    this.map = new PairMap();
+    if (values !== undefined) {
+      values.forEach(([a, b]) => this.add(a, b));
+    }
+  }
+
+  get size() {
+    return this.map.size;
+  }
+
   forEach(callback: (a: A, b: B, pairSet?: PairSet<A, B>) => unknown) {
     this.map.forEach(
-      (set, a) => set.forEach(
-        b => callback(a, b, this)
-      )
+      (a, b) => callback(a, b, this)
     );
   }
 
@@ -64,34 +153,18 @@ export class PairSet<A, B = A> {
 
   clear() {
     this.map.clear();
-    this.size = 0;
   }
 
-  add(a: A, b: B) {
-    if (!this.hasPrimary(a)) {
-      this.setPrimary(a);
-    }
-    this.getPrimary(a)!.add(b);
-    this.size += 1;
+  add(a: A, b: B): this {
+    this.map.set(a, b, undefined);
     return this;
   }
 
-  delete(a: A, b: B) {
-    if (!this.hasPrimary(a)) {
-      return false;
-    }
-    const ret = this.getPrimary(a)!.delete(b);
-    if (this.getPrimary(a)!.size === 0) {
-      this.delPrimary(a);
-    }
-    this.size -= 1;
-    return ret;
+  delete(a: A, b: B): boolean {
+    return this.map.delete(a, b);
   }
 
-  has(a: A, b: B) {
-    if (!this.hasPrimary(a)) {
-      return false;
-    }
-    return this.getPrimary(a)!.has(b);
+  has(a: A, b: B): boolean {
+    return this.map.has(a, b);
   }
 }
