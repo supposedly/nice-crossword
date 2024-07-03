@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 20
       - name: Install Vite
-        run: npm install vite
+        run: npm install vite --force
       - name: Build with Vite
         run: npx vite build
       - name: Upload artifact
