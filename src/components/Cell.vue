@@ -51,6 +51,7 @@ function update() {
 <style scoped>
     p {
         position: relative;
+        margin: 0;
     }
 
     span {
