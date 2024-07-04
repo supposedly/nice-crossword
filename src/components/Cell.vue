@@ -8,10 +8,10 @@ const emit = defineEmits(['update', 'jump', 'flip']);
 let alreadyFocused = false;
 
 function jump(e: KeyboardEvent) {
-    let key = e.key.replace(/^Arrow/, '');
+    let key = e.key.replace(/^Arrow/, '').trim();
     switch (key) {
         case 'Tab':
-            emit('jump', props.row, props.col, {relative: true, direction: !e.shiftKey});
+            emit('flip');
             break;
         // @ts-expect-error (intentional fallthrough)
         case 'Backspace': 

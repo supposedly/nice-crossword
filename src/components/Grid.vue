@@ -59,8 +59,7 @@ function addDown(row: number, col: number) {
 
 function update(row: number, col: number, key: string) {
     grid.setDefault(row, col, {value: '', number: null}).value = key;
-    const value = grid.get(row, col)?.value.trim();
-    console.log(row, col, value)
+    const value = grid.get(row, col)?.value;
     if (value) {
         across.delete(row, col + 1);
         down.delete(row + 1, col);
