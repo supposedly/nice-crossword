@@ -77,7 +77,8 @@ function flip() {
 
     span {
         position: absolute;
-        font-size: small;
+        font-size: x-small;
+        font-weight: bold;
         top: -2px;
         z-index: 1;
     }
@@ -96,7 +97,7 @@ function flip() {
 
         text-align: center;
         text-transform: uppercase;
-        font-size: xx-large;
+        font-size: x-large;
 
         &:focus{
             outline: none;
