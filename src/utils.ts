@@ -107,6 +107,14 @@ export class PairMap<V, A, B = A> {
   get(a: A, b: B): V | undefined {
     return this.getPrimary(a)?.get(b);
   }
+
+  *values() {
+    for (const map of this.map.values()) {
+      for (const v of map.values()) {
+        yield v;
+      }
+    }
+  }
 }
 
 export class PairSet<A, B = A> {

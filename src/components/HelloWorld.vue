@@ -3,14 +3,14 @@ import { reactive, ref, watchEffect } from 'vue';
 
 import Grid from './Grid.vue';
 import Clues from './Clues.vue'
-import { PairSet } from '../utils';
+import { PairMap } from '../utils';
 
 const width = ref(10);
 const height = ref(10);
 const color = ref();
 
-const across = reactive(new PairSet<number>());
-const down = reactive(new PairSet<number>());
+const across = reactive(new PairMap<number | null, number>());
+const down = reactive(new PairMap<number | null, number>());
 const highlights = reactive(new Set<string>());
 
 watchEffect(() => console.log(across))

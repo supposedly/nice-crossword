@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Reactive } from 'vue';
-import { PairSet } from '../utils';
+import { PairMap } from '../utils';
 
-defineProps<{across: Reactive<PairSet<number>>, down: Reactive<PairSet<number>>, highlights: Set<string>}>();
+defineProps<{across: Reactive<PairMap<number | null, number>>, down: Reactive<PairMap<number | null, number>>, highlights: Set<string>}>();
 </script>
 
 <template>
@@ -12,13 +12,13 @@ defineProps<{across: Reactive<PairSet<number>>, down: Reactive<PairSet<number>>,
             <div>
                 <h3>Across</h3>
                 <ol>
-                    <li v-for="_ in across.size"><input></input></li>
+                    <li v-for="n in across.values()" :value="n!"><input></input></li>
                 </ol>
             </div>
             <div>
                 <h3>Down</h3>
                 <ol>
-                    <li v-for="_ in down.size"><input></input></li>
+                    <li v-for="n in down.values()" :value="n!"><input></input></li>
                 </ol>
             </div>
             <div>

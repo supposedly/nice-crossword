@@ -8,23 +8,43 @@ const props = defineProps<{width: number, height: number, color: string}>();
 let grid: Reactive<PairMap<{value: string, number: number | null, color: string}, number>> = reactive(new PairMap());
 let horizontal = true;
 
-let across = defineModel<Reactive<PairSet<number>>>('across', {default: reactive(new PairSet())});
-let down = defineModel<Reactive<PairSet<number>>>('down', {default: reactive(new PairSet())});
-let highlights = defineModel<Reactive<Set<string>>>('highlights', {default: reactive(new Map())});
+let across = defineModel<Reactive<PairMap<number | null, number>>>('across', {default: reactive(new PairMap())});
+let down = defineModel<Reactive<PairMap<number | null, number>>>('down', {default: reactive(new PairMap())});
+let highlights = defineModel<Reactive<Set<string>>>('highlights', {default: reactive(new Set())});
 
 const defaultCell = () => ({value: '', number: null, color: 'rgba(0, 0, 0, 0)'});
 
 function showNumber(number: number, row: number, col: number) {
     const value = grid.get(row, col);
-    if (value !== undefined) {
-        value.number = number;
+    if (row < 0 || col < 0 || row >= props.height || col >= props.width) {
+        return;
+    }
+    if (value === undefined) {
+        return;
+    }
+    value.number = number;
+    if (across.value.has(row, col)) {
+        across.value.set(row, col, number);
+    }
+    if (down.value.has(row, col)) {
+        down.value.set(row, col, number);
     }
 }
 
 function removeNumber(row: number, col: number) {
     const value = grid.get(row, col);
-    if (value !== undefined) {
-        value.number = null;
+    if (row < 0 || col < 0 || row >= props.height || col >= props.width) {
+        return;
+    }
+    if (value === undefined) {
+        return;
+    }
+    value.number = null;
+    if (across.value.has(row, col)) {
+        across.value.set(row, col, null);
+    }
+    if (down.value.has(row, col)) {
+        down.value.set(row, col, null);
     }
 }
 
@@ -41,7 +61,7 @@ function addAcross(row: number, col: number) {
         return;
     }
     if (grid.get(row, col + 1)?.value.trim()) {
-        across.value.add(row, col);
+        across.value.set(row, col, null);
         return;
     }
     across.value.delete(row, col);
@@ -60,7 +80,7 @@ function addDown(row: number, col: number) {
         return;
     }
     if (grid.get(row + 1, col)?.value.trim()) {
-        down.value.add(row, col);
+        down.value.set(row, col, null);
         return;
     }
     down.value.delete(row, col);
