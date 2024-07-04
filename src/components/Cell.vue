@@ -1,8 +1,11 @@
 <script setup lang="ts">
 
+
 const props = withDefaults(defineProps<{name: string, row: number, col: number, number: number | null}>(), {name: 'grid'});
 const model = defineModel<string>();
-const emit = defineEmits(['update', 'jump']);
+const emit = defineEmits(['update', 'jump', 'flip']);
+
+let alreadyFocused = false;
 
 function jump(e: KeyboardEvent) {
     let key = e.key.replace(/^Arrow/, '');
@@ -30,6 +33,12 @@ function jump(e: KeyboardEvent) {
             break;
     }
 }
+
+function flip() {
+    if (alreadyFocused) {
+        emit('flip');
+    }
+}
 </script>
 
 <template>
@@ -43,6 +52,9 @@ function jump(e: KeyboardEvent) {
             :data-row="row"
             :data-col="col"
             @keydown.prevent="jump"
+            @mousedown="flip"
+            @focusin="() => { alreadyFocused = true; }"
+            @focusout="() => { alreadyFocused = false; }"
         ></input>
     </p>
 </template>
@@ -75,7 +87,7 @@ function jump(e: KeyboardEvent) {
         &:focus{
             outline: none;
             background-color: #eee;
-            /*caret-color: transparent;*/
+            caret-color: transparent;
         }
     }
 </style>

@@ -119,6 +119,10 @@ function jump(row: number, col: number, spec: {relative: true, direction: boolea
     }
 }
 
+function flip() {
+    horizontal = !horizontal;
+}
+
 const name = getCurrentInstance()?.uid.toString();
 </script>
 
@@ -133,6 +137,7 @@ const name = getCurrentInstance()?.uid.toString();
                 :model-value="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
                 @update="update"
                 @jump="jump"
+                @flip="flip"
             />
         </template>
     </div>
