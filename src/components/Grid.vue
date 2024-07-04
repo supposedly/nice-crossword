@@ -6,6 +6,7 @@ import { PairMap, PairSet } from '../utils';
 const props = defineProps<{width: number, height: number}>();
 
 let grid: Reactive<PairMap<{value: string, number: number | null}, number>> = reactive(new PairMap());
+let horizontal = true;
 
 let across = new PairSet<number>();
 let down = new PairSet<number>();
@@ -92,7 +93,7 @@ const getCell = (row: number, col: number) => document.querySelector(`input[data
 function jump(row: number, col: number, spec: {relative: true, direction: boolean} | {relative: false, direction: string}) {
     if (spec.relative) {
         const offset = spec.direction ? 1 : -1;
-        getCell(row, col + offset).focus();
+        getCell(row + offset * +!horizontal, col + offset * +horizontal).focus();
     } else {
         let x: number = 0;
         let y: number = 0;
@@ -110,6 +111,7 @@ function jump(row: number, col: number, spec: {relative: true, direction: boolea
                 x = 1;
                 break;
         }
+        horizontal = !!x;
         const cellInput = getCell(row + y, col + x);
         cellInput.focus();
         cellInput.setSelectionRange(1, 1);
