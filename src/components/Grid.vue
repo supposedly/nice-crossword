@@ -29,6 +29,9 @@ function removeNumber(row: number, col: number) {
 }
 
 function addAcross(row: number, col: number) {
+    if (row < 0 || col < 0 || row >= props.height || col >= props.width) {
+        across.value.delete(row, col);
+    }
     if (!grid.get(row, col)?.value.trim()) {
         across.value.delete(row, col);
         return;
@@ -45,8 +48,11 @@ function addAcross(row: number, col: number) {
 }
 
 function addDown(row: number, col: number) {
+    if (row < 0 || col < 0 || row >= props.height || col >= props.width) {
+        down.value.delete(row, col);
+    }
     if (!grid.get(row, col)?.value.trim()) {
-        across.value.delete(row, col);
+        down.value.delete(row, col);
         return;
     }
     if (grid.get(row - 1, col)?.value.trim()) {
@@ -60,8 +66,20 @@ function addDown(row: number, col: number) {
     down.value.delete(row, col);
 }
 
-function update(row: number, col: number, key: string) {
-    grid.setDefault(row, col, defaultCell()).value = key;
+function updateNumbers() {
+    let number = 1;
+    for (let row = 0; row < props.height; row++) {
+        for (let col = 0; col < props.width; col++) {
+            if (across.value.has(row, col) || down.value.has(row, col)) {
+                showNumber(number++, row, col);
+            } else {
+                removeNumber(row, col);
+            }
+        }
+    }
+}
+
+function updateLists(row: number, col: number) {
     const value = grid.get(row, col)?.value;
     if (value) {
         across.value.delete(row, col + 1);
@@ -78,17 +96,12 @@ function update(row: number, col: number, key: string) {
         addAcross(row, col - 1);
         addDown(row - 1, col);
     }
+}
 
-    let number = 1;
-    for (let row = 0; row < props.height; row++) {
-        for (let col = 0; col < props.width; col++) {
-            if (across.value.has(row, col) || down.value.has(row, col)) {
-                showNumber(number++, row, col);
-            } else {
-                removeNumber(row, col);
-            }
-        }
-    }
+function update(row: number, col: number, key: string) {
+    grid.setDefault(row, col, defaultCell()).value = key;
+    updateLists(row, col);
+    updateNumbers();
 }
 
 const getCell = (row: number, col: number) => document.querySelector(`input[data-row="${row}"][data-col="${col}"]`) as HTMLInputElement;
@@ -132,11 +145,87 @@ function highlight(row: number, col: number) {
     grid.setDefault(row, col, defaultCell()).color = props.color;
 }
 
+function left() {
+    const shifted = new PairMap<{
+        value: string;  
+        number: number | null;
+        color: string;
+    }, number>();
+    grid.forEach((row, col, v) => {
+        shifted.set(row, col - 1, v!);
+        grid.delete(row, col);
+        updateLists(row, col);
+    });
+    shifted.forEach((row, col, v) => {
+        grid.set(row, col, v!);
+        updateLists(row, col);
+    });
+    updateNumbers();
+}
+
+function right() {
+    const shifted = new PairMap<{
+        value: string;  
+        number: number | null;
+        color: string;
+    }, number>();
+    grid.forEach((row, col, v) => {
+        shifted.set(row, col + 1, v!);
+        grid.delete(row, col);
+        updateLists(row, col);
+    });
+    shifted.forEach((row, col, v) => {
+        grid.set(row, col, v!);
+        updateLists(row, col);
+    });
+    updateNumbers();
+}
+
+function up() {
+    const shifted = new PairMap<{
+        value: string;  
+        number: number | null;
+        color: string;
+    }, number>();
+    grid.forEach((row, col, v) => {
+        shifted.set(row - 1, col, v!);
+        grid.delete(row, col);
+        updateLists(row, col);
+    });
+    shifted.forEach((row, col, v) => {
+        grid.set(row, col, v!);
+        updateLists(row, col);
+    });
+    updateNumbers();
+}
+
+function goDown() {
+    const shifted = new PairMap<{
+        value: string;  
+        number: number | null;
+        color: string;
+    }, number>();
+    grid.forEach((row, col, v) => {
+        shifted.set(row + 1, col, v!);
+        grid.delete(row, col);
+        updateLists(row, col);
+    });
+    shifted.forEach((row, col, v) => {
+        grid.set(row, col, v!);
+        updateLists(row, col);
+    });
+    updateNumbers();
+}
+
 const name = getCurrentInstance()?.uid.toString();
 </script>
 
 <template>
     <div class="grid-container">
+        <button @click="left">Left</button>
+        <button @click="up">Up</button>
+        <button @click="goDown">Down</button>
+        <button @click="right">Right</button>
         <div class="grid">
             <template v-for="row in height">
                 <Cell v-for="col in width"
