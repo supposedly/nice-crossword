@@ -57,7 +57,8 @@ function addDown(row: number, col: number) {
     down.delete(row, col);
 }
 
-function update(row: number, col: number) {
+function update(row: number, col: number, key: string) {
+    grid.setDefault(row, col, {value: '', number: null}).value = key;
     const value = grid.get(row, col)?.value.trim();
     console.log(row, col, value)
     if (value) {
@@ -129,7 +130,7 @@ const name = getCurrentInstance()?.uid.toString();
                 :row="row - 1"
                 :col="col - 1"
                 :number="grid.setDefault(row - 1, col - 1, {value: '', number: null}).number"
-                v-model="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
+                :model-value="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
                 @update="update"
                 @jump="jump"
             />

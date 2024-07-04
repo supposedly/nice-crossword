@@ -10,8 +10,11 @@ function jump(e: KeyboardEvent) {
         case 'Tab':
             emit('jump', props.row, props.col, {relative: true, direction: !e.shiftKey});
             break;
-        case 'Backspace':
+        // @ts-expect-error (intentional fallthrough)
+        case 'Backspace': 
             emit('jump', props.row, props.col, {relative: true, direction: false});
+        case 'Delete':
+            emit('update', props.row, props.col, '');
             break;
         case 'Up':
         case 'Down':
@@ -20,13 +23,12 @@ function jump(e: KeyboardEvent) {
             emit('jump', props.row, props.col, {relative: false, direction: key});
             break;
         default:
-            emit('jump', props.row, props.col, {relative: true, direction: true});
+            if (e.key.length === 1) {
+                emit('update', props.row, props.col, key);
+                emit('jump', props.row, props.col, {relative: true, direction: true});
+            }
             break;
     }
-}
-
-function update() {
-    emit('update', props.row, props.col)
 }
 </script>
 
@@ -40,16 +42,7 @@ function update() {
             :name="name"
             :data-row="row"
             :data-col="col"
-            @input="update"
-            @keypress="jump"
-            @keydown.tab.prevent="jump"
-            @keydown.up.prevent="jump"
-            @keydown.down.prevent="jump"
-            @keydown.left.prevent="jump"
-            @keydown.right.prevent="jump"
-            @keydown.backspace="e => (e.target as HTMLInputElement).setSelectionRange(1, 1)"
-            @keydown.delete="e => e.key === 'Backspace' ? jump(e) : (e.target as HTMLInputElement).setSelectionRange(0, 0)"
-            @mouseup="e => (e.target as HTMLInputElement).setSelectionRange(1, 1)"
+            @keydown.prevent="jump"
         ></input>
     </p>
 </template>
