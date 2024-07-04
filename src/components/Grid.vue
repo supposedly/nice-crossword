@@ -147,7 +147,6 @@ const name = getCurrentInstance()?.uid.toString();
 <style scoped>
 div.grid {
     display: grid;
-    grid-template: repeat(v-bind(height), minmax(0, 1fr)) / repeat(v-bind(width), minmax(0, 1fr));
-    max-width: 25vw;
+    grid-template: repeat(v-bind(height), 1fr) / repeat(v-bind(width), 1fr);
 }
 </style>
