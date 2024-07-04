@@ -35,6 +35,7 @@ defineProps<{across: Reactive<PairSet<number>>, down: Reactive<PairSet<number>>,
 </template>
 
 <style scoped>
+
 section {
     display: flex;
     margin-top: -0.5em;

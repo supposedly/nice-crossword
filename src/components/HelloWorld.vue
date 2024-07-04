@@ -25,15 +25,27 @@ watchEffect(() => console.log(across))
   <color-picker v-model:pureColor="color" format="rgb" shape="circle"></color-picker>
 
 
-  <div>
-    <Grid :width :height v-model:across="across" v-model:down="down" v-model:highlights="highlights" :color="color"></Grid>
-    <Clues :across :down :highlights></Clues>
+  <div class="container">
+    <div class="item grid">
+      <Grid :width :height v-model:across="across" v-model:down="down" v-model:highlights="highlights" :color="color"></Grid>
+    </div>
+    <div class="item clues">
+      <Clues :across :down :highlights></Clues>
+    </div>
   </div>
 </template>
 
 <style scoped>
-div {
+div.container {
   display: flex;
   gap: 1em;
+}
+
+div.grid {
+  flex: 1;
+}
+
+div.clues {
+  flex: 1.5;
 }
 </style>
