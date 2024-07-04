@@ -47,7 +47,6 @@ function flip() {
         <input
             v-model="model"
             maxlength="1"
-            size="1"
             :name="name"
             :data-row="row"
             :data-col="col"
@@ -55,7 +54,7 @@ function flip() {
             @mousedown="flip"
             @focusin="() => { alreadyFocused = true; }"
             @focusout="() => { alreadyFocused = false; }"
-        ></input>
+        />
     </p>
 </template>
 
@@ -63,6 +62,8 @@ function flip() {
     p {
         position: relative;
         margin: 0;
+        padding: 0;
+        aspect-ratio: 1;
     }
 
     span {
@@ -70,16 +71,17 @@ function flip() {
         left: 1px;
         top: -4px;
         font-size: small;
+        margin: 0;
+        padding: 0;
     }
 
     input {
         display: block;
+        position:relative;
+        aspect-ratio: 1;
+        margin: 0;
         width: 100%;
-        height: 0;
-        padding: none;
-        padding-bottom: 50%;
-        padding-top: 50%;
-        font-size: x-large;
+        height: 100%;
 
         text-align: center;
         text-transform: uppercase;

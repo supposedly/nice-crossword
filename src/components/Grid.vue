@@ -126,25 +126,28 @@ const name = getCurrentInstance()?.uid.toString();
 </script>
 
 <template>
-    <div>
-        <template v-for="row in height">
-            <Cell v-for="col in width"
-                :name
-                :row="row - 1"
-                :col="col - 1"
-                :number="grid.setDefault(row - 1, col - 1, {value: '', number: null}).number"
-                :model-value="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
-                @update="update"
-                @jump="jump"
-                @flip="flip"
-            />
-        </template>
+    <div class="grid-container">
+        <div class="grid">
+            <template v-for="row in height">
+                <Cell v-for="col in width"
+                    :name
+                    :row="row - 1"
+                    :col="col - 1"
+                    :number="grid.setDefault(row - 1, col - 1, {value: '', number: null}).number"
+                    :model-value="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
+                    @update="update"
+                    @jump="jump"
+                    @flip="flip"
+                />
+            </template>
+        </div>
     </div>
 </template>
 
 <style scoped>
-div {
+div.grid {
     display: grid;
-    grid-template: repeat(v-bind(height), 1fr) / repeat(v-bind(width), 1fr);
+    grid-template: repeat(v-bind(height), minmax(0, 1fr)) / repeat(v-bind(width), minmax(0, 1fr));
+    max-width: 25vw;
 }
 </style>
