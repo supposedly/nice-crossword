@@ -30,11 +30,11 @@ export class PairMap<V, A, B = A> {
     return this.map.delete(a);
   }
 
-  setDefault(a: A, b: B, fallback: V) {
+  setDefault(a: A, b: B, fallback: V): V {
     if (!this.has(a, b)) {
       this.set(a, b, fallback);
     }
-    return this.get(a, b);
+    return this.get(a, b)!;
   }
 
   forEach(callback: (a: A, b: B, v?: V, pairMap?: PairMap<V, A, B>) => unknown) {

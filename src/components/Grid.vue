@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import { getCurrentInstance, reactive, computed , watchEffect} from 'vue';
+import { getCurrentInstance, reactive, Reactive} from 'vue';
 import Cell from './Cell.vue'
 import { PairMap, PairSet } from '../utils';
 
 const props = defineProps<{width: number, height: number}>();
 
-let grid: PairMap<{value: string, number: number | null}, number> = reactive(new PairMap());
+let grid: Reactive<PairMap<{value: string, number: number | null}, number>> = reactive(new PairMap());
 
 let across = new PairSet<number>();
 let down = new PairSet<number>();
 
 function showNumber(number: number, row: number, col: number) {
-    grid.get(row, col).number = number;
+    const value = grid.get(row, col);
+    if (value !== undefined) {
+        value.number = number;
+    }
 }
 
 function removeNumber(row: number, col: number) {
-    grid.get(row, col).number = null;
+    const value = grid.get(row, col);
+    if (value !== undefined) {
+        value.number = null;
+    }
 }
 
 function addAcross(row: number, col: number) {
@@ -52,6 +58,7 @@ function addDown(row: number, col: number) {
 
 function update(row: number, col: number) {
     const value = grid.get(row, col)?.value.trim();
+    console.log(row, col, value)
     if (value) {
         across.delete(row, col + 1);
         down.delete(row + 1, col);
@@ -80,12 +87,12 @@ function update(row: number, col: number) {
     }
 }
 
-const cell = (row: number, col: number) => document.querySelector(`input[data-row="${row}"][data-col="${col}"]`) as HTMLInputElement;
+const getCell = (row: number, col: number) => document.querySelector(`input[data-row="${row}"][data-col="${col}"]`) as HTMLInputElement;
 
 function jump(row: number, col: number, spec: {relative: true, direction: boolean} | {relative: false, direction: string}) {
     if (spec.relative) {
         const offset = spec.direction ? 1 : -1;
-        cell(row, col + offset).focus();
+        getCell(row, col + offset).focus();
     } else {
         let x: number = 0;
         let y: number = 0;
@@ -103,7 +110,9 @@ function jump(row: number, col: number, spec: {relative: true, direction: boolea
                 x = 1;
                 break;
         }
-        cell(row + y, col + x).focus()
+        const cellInput = getCell(row + y, col + x);
+        cellInput.focus();
+        cellInput.setSelectionRange(1, 1);
     }
 }
 
