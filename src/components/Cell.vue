@@ -1,15 +1,24 @@
 <script setup lang="ts">
 
 
-const props = withDefaults(defineProps<{name: string, row: number, col: number, number: number | null}>(), {name: 'grid'});
+const props = withDefaults(defineProps<{
+    name: string,
+    row: number,
+    color: string | null,
+    col: number,
+    number: number | null
+}>(), {name: 'grid', color: null});
 const model = defineModel<string>();
-const emit = defineEmits(['update', 'jump', 'flip']);
+const emit = defineEmits(['update', 'jump', 'flip', 'highlight']);
 
 let alreadyFocused = false;
 
 function jump(e: KeyboardEvent) {
     let key = e.key.replace(/^Arrow/, '').trim();
     switch (key) {
+        case '':
+            emit('highlight', props.row, props.col);
+            break;
         case 'Tab':
             emit('flip');
             break;
@@ -68,27 +77,30 @@ function flip() {
 
     span {
         position: absolute;
-        left: 1px;
-        top: -4px;
         font-size: small;
-        margin: 0;
-        padding: 0;
+        top: -2px;
+        z-index: 1;
     }
 
     input {
-        display: block;
-        position:relative;
+        outline: none;
+        border: 1px solid black;
+        display: inline-block;
+        background-color: v-bind('$props.color');
+
+        position: relative;
         aspect-ratio: 1;
-        margin: 0;
+        box-sizing: border-box;
         width: 100%;
         height: 100%;
 
         text-align: center;
         text-transform: uppercase;
+        font-size: xx-large;
 
         &:focus{
             outline: none;
-            background-color: #eee;
+            box-shadow: inset 0 0 100px 100px rgba(0, 0, 0, 0.1);
             caret-color: transparent;
         }
     }

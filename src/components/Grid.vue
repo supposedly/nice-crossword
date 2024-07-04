@@ -3,13 +3,16 @@ import { getCurrentInstance, reactive, Reactive} from 'vue';
 import Cell from './Cell.vue'
 import { PairMap, PairSet } from '../utils';
 
-const props = defineProps<{width: number, height: number}>();
+const props = defineProps<{width: number, height: number, color: string}>();
 
-let grid: Reactive<PairMap<{value: string, number: number | null}, number>> = reactive(new PairMap());
+let grid: Reactive<PairMap<{value: string, number: number | null, color: string}, number>> = reactive(new PairMap());
 let horizontal = true;
 
-let across = new PairSet<number>();
-let down = new PairSet<number>();
+let across = defineModel<Reactive<PairSet<number>>>('across', {default: reactive(new PairSet())});
+let down = defineModel<Reactive<PairSet<number>>>('down', {default: reactive(new PairSet())});
+let highlights = defineModel<Reactive<Set<string>>>('highlights', {default: reactive(new Map())});
+
+const defaultCell = () => ({value: '', number: null, color: 'rgba(0, 0, 0, 0)'});
 
 function showNumber(number: number, row: number, col: number) {
     const value = grid.get(row, col);
@@ -27,49 +30,49 @@ function removeNumber(row: number, col: number) {
 
 function addAcross(row: number, col: number) {
     if (!grid.get(row, col)?.value.trim()) {
-        across.delete(row, col);
+        across.value.delete(row, col);
         return;
     }
     if (grid.get(row, col - 1)?.value.trim()) {
-        across.delete(row, col);
+        across.value.delete(row, col);
         return;
     }
     if (grid.get(row, col + 1)?.value.trim()) {
-        across.add(row, col);
+        across.value.add(row, col);
         return;
     }
-    across.delete(row, col);
+    across.value.delete(row, col);
 }
 
 function addDown(row: number, col: number) {
     if (!grid.get(row, col)?.value.trim()) {
-        across.delete(row, col);
+        across.value.delete(row, col);
         return;
     }
     if (grid.get(row - 1, col)?.value.trim()) {
-        down.delete(row, col);
+        down.value.delete(row, col);
         return;
     }
     if (grid.get(row + 1, col)?.value.trim()) {
-        down.add(row, col);
+        down.value.add(row, col);
         return;
     }
-    down.delete(row, col);
+    down.value.delete(row, col);
 }
 
 function update(row: number, col: number, key: string) {
-    grid.setDefault(row, col, {value: '', number: null}).value = key;
+    grid.setDefault(row, col, defaultCell()).value = key;
     const value = grid.get(row, col)?.value;
     if (value) {
-        across.delete(row, col + 1);
-        down.delete(row + 1, col);
+        across.value.delete(row, col + 1);
+        down.value.delete(row + 1, col);
         addAcross(row, col);
         addDown(row, col);
         addAcross(row, col - 1);
         addDown(row - 1, col);
     } else {
-        across.delete(row, col);
-        down.delete(row, col);
+        across.value.delete(row, col);
+        down.value.delete(row, col);
         addAcross(row, col + 1);
         addDown(row + 1, col);
         addAcross(row, col - 1);
@@ -79,7 +82,7 @@ function update(row: number, col: number, key: string) {
     let number = 1;
     for (let row = 0; row < props.height; row++) {
         for (let col = 0; col < props.width; col++) {
-            if (across.has(row, col) || down.has(row, col)) {
+            if (across.value.has(row, col) || down.value.has(row, col)) {
                 showNumber(number++, row, col);
             } else {
                 removeNumber(row, col);
@@ -93,7 +96,7 @@ const getCell = (row: number, col: number) => document.querySelector(`input[data
 function jump(row: number, col: number, spec: {relative: true, direction: boolean} | {relative: false, direction: string}) {
     if (spec.relative) {
         const offset = spec.direction ? 1 : -1;
-        getCell(row + offset * +!horizontal, col + offset * +horizontal).focus();
+        getCell(row + offset * +!horizontal, col + offset * +horizontal)?.focus();
     } else {
         let x: number = 0;
         let y: number = 0;
@@ -111,15 +114,22 @@ function jump(row: number, col: number, spec: {relative: true, direction: boolea
                 x = 1;
                 break;
         }
-        horizontal = !!x;
-        const cellInput = getCell(row + y, col + x);
-        cellInput.focus();
-        cellInput.setSelectionRange(1, 1);
+        // this is disruptive during editing
+        // horizontal = !!x;
+        getCell(row + y, col + x).focus();
     }
 }
 
 function flip() {
     horizontal = !horizontal;
+}
+
+function highlight(row: number, col: number) {
+    if (grid.has(row, col)) {
+        highlights.value.delete(grid.get(row, col)!.color);
+    }
+    highlights.value.add(props.color);
+    grid.setDefault(row, col, defaultCell()).color = props.color;
 }
 
 const name = getCurrentInstance()?.uid.toString();
@@ -133,11 +143,13 @@ const name = getCurrentInstance()?.uid.toString();
                     :name
                     :row="row - 1"
                     :col="col - 1"
-                    :number="grid.setDefault(row - 1, col - 1, {value: '', number: null}).number"
-                    :model-value="grid.setDefault(row - 1, col - 1, {value: '', number: null}).value"
+                    :number="grid.setDefault(row - 1, col - 1, defaultCell()).number"
+                    :color="grid.setDefault(row - 1, col - 1, defaultCell()).color"
+                    :model-value="grid.setDefault(row - 1, col - 1, defaultCell()).value"
                     @update="update"
                     @jump="jump"
                     @flip="flip"
+                    @highlight="highlight"
                 />
             </template>
         </div>
@@ -148,5 +160,6 @@ const name = getCurrentInstance()?.uid.toString();
 div.grid {
     display: grid;
     grid-template: repeat(v-bind(height), 1fr) / repeat(v-bind(width), 1fr);
+    max-width: 25vw;
 }
 </style>

@@ -87,12 +87,14 @@ export class PairMap<V, A, B = A> {
     if (!this.hasPrimary(a)) {
       return false;
     }
-    const ret = this.getPrimary(a)!.delete(b);
+    const deleted = this.getPrimary(a)!.delete(b);
     if (this.getPrimary(a)!.size === 0) {
       this.delPrimary(a);
     }
-    this.size -= 1;
-    return ret;
+    if (deleted) {
+      this.size -= 1;
+    }
+    return deleted;
   }
 
   has(a: A, b: B) {
